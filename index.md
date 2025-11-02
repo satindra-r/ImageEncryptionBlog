@@ -3,19 +3,32 @@ layout: default
 title: Home
 ---
 
-# Welcome to My Site!
+<script src="https://ncase.me/nutshell/nutshell.js"></script>
+<script>
+  Nutshell.setOptions({
+    startOnLoad: true,
+  });
+</script>
 
-This is a simple example of using Nutshell with GitHub Pages.
+<style>
+.nutshell-bubble {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
 
-[:What is Nutshell?](#aboutNutshell)
-[:How does this work?](#howItWorks)
+## To write a section,
 
-## About Nutshell
+just use headings & paragraphs like this! Then...
 
-Nutshell lets you create expandable explanations that appear when readers click special links.
+## To embed a section,
 
-## How It Works
+just make a link with :colon at the front... [:LIKE THIS](#to-write-a-section)!
 
-When you click a Nutshell link (starting with :), it shows the target content in a little popup bubble.
+## To Write A Section
 
-[:Back to top](#WelcomeToMySite)
+This is the target section that will appear in the Nutshell bubble when clicked!
+
+**It works!** You can put any content here - paragraphs, lists, code blocks, etc.
+
+[:close this](#to-embed-a-section)
