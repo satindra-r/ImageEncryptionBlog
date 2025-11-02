@@ -7,8 +7,8 @@ title: Home
 
 This is a simple example of using Nutshell with GitHub Pages.
 
-[:What is Nutshell?](#about-nutshell)
-[:How does this work?](#how-it-works)
+[:What is Nutshell?](#aboutNutshell)
+[:How does this work?](#howItWorks)
 
 ## About Nutshell
 
@@ -18,4 +18,4 @@ Nutshell lets you create expandable explanations that appear when readers click 
 
 When you click a Nutshell link (starting with :), it shows the target content in a little popup bubble.
 
-[:Back to top](#welcome-to-my-site)
+[:Back to top](#WelcomeToMySite)
