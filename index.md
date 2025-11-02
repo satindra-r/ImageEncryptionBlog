@@ -29,12 +29,12 @@ In Homomorphic Encryption there is no control over the algorithm used on the enc
 
 ## The Problem
 Before we move on with the potentials solutions we have to define the problem to be solved first:
-	  - Encryption must convert images to images.
-	  - Images must be in a commonly used format preferably the same format as the input image. [:Why?](#whyACommonFormat)
-	  - Encrypted image must be the same size as the initial image. [:Why?](#whySameSize)
-	  - When the encrypted image is scaled down and decrypted the result should be a scaled version of the initial image, i.e. Decrypt(Scale(Encrypt(Img))) = Decrypt(Enc(Scale(Img))) = Scale(Img), The above property should hold for most common scaling algorithms.
-	  - Encryption must be "backed" by a standard encryption algorithm to ensure security.
-	  - Encryption may be lossy as long as the image is mostly preserved.
+  - Encryption must convert images to images.
+  - Images must be in a commonly used format preferably the same format as the input image. [:Why?](#whyACommonFormat)
+  - Encrypted image must be the same size as the initial image. [:Why?](#whySameSize)
+  - When the encrypted image is scaled down and decrypted the result should be a scaled version of the initial image, i.e. Decrypt(Scale(Encrypt(Img))) = Decrypt(Enc(Scale(Img))) = Scale(Img), The above property should hold for most common scaling algorithms.
+  - Encryption must be "backed" by a standard encryption algorithm to ensure security.
+  - Encryption may be lossy as long as the image is mostly preserved.
 
 ### :x Why a Common Format
 This is so that the image can be rendered and scaled by the application
