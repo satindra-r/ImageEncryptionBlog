@@ -10,13 +10,6 @@ title: Home
   });
 </script>
 
-<style>
-.nutshell-bubble {
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-</style>
-
 ## To write a section,
 
 just use headings & paragraphs like this! Then...
