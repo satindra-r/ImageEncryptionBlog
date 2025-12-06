@@ -10,6 +10,8 @@ title: Home
   });
 </script>
 
+This Blog is made using [Nutshell](https://ncase.me/nutshell) click on the [:Special Links](Links with a ':' at the start) for more context
+
 # Introduction
 Images like any other data format can very easily be encrypted using standard algorithms like RSA or AES but those result in a meaningless blob that cant be used anywhere. Sometimes it's worth keeping some properties to allow for file uploads to share it with others in places where images are only allowed.
 
