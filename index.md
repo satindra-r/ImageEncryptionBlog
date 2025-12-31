@@ -16,7 +16,7 @@ This Blog is made using [Nutshell](https://ncase.me/nutshell) click on the [:Spe
 Links with a ':' at the start
 
 # Introduction
-Images like any other data format can very easily be encrypted using standard algorithms like RSA or AES but those result in a meaningless blob that cant be used anywhere. Sometimes it's worth keeping some properties to allow for file uploads to share it with others in places where images are only allowed.
+Images like any other data format can very easily be encrypted using standard algorithms like RSA or AES but those result in a meaningless blob that can't be used anywhere. Sometimes it's worth keeping some properties to allow for file uploads to share with others in places where images are only allowed.
 
 # Basic Encryption
 This step is fairly easy to implement, we can easily take a block of a few pixels and encrypt them and interpret the resulting data also as pixels. This allows us to upload the encrypted image on social media or chat apps that restrict file uploads to images. However some apps do additional processing like scaling the image and the new algorithm for encryption doesn't work anymore. When the image is scaled the algorithm usually involves some interpolation so the resulting pixels are different from the starting pixels and the decryption breaks
@@ -24,16 +24,16 @@ This step is fairly easy to implement, we can easily take a block of a few pixel
 The knee-jerk reaction to trying to work with encrypted data is [:Homomorphic Encryption](#HomomorphicEncryption). However there are a [:few specific issues](#IssuesWithHomomorphicEncryption) that make this not optimal.
 
 ## :x Homomorphic Encryption
-Homomorphic Encryption is a scheme where operations can be perfomed on the encrypted data which corresponds to an operation on the initial data. This can be written as encrypt(f(a)) = g(encrypt(a)) or in the binary operation case encrypt(f(a,b)) = g(encrypt(a),encrypt(b))
+Homomorphic Encryption is a scheme where operations can be performed on the encrypted data which corresponds to an operation on the initial data. This can be written as encrypt(f(a)) = g(encrypt(a)) or in the binary operation case encrypt(f(a,b)) = g(encrypt(a),encrypt(b))
 
 ## :x Issues with Homomorphic Encryption
-In Homomorphic Encryption there is no control over the algorithm used on the encrypted image, this is both in terms of the actual logic of the algorithm and also that it wont involve the required operators that map from the unencrypted domain to the encrypted domain. Secondly the calculations are usually performed in floating point and converted to integers at the end which doesn't play well with most Homomorphic Encryption schemes
+In Homomorphic Encryption there is no control over the algorithm used on the encrypted image, this is both in terms of the actual logic of the algorithm and also that it won't involve the required operators that map from the unencrypted domain to the encrypted domain. Secondly the calculations are usually performed in floating point and converted to integers at the end which doesn't play well with most Homomorphic Encryption schemes
 
 # Problem Statement
 Before we move on with the potentials solutions we have to define the problem to be solved first:
   - Encryption must convert images to images.
   - Images must be in a commonly used format preferably the same format as the input image. [:Why?](#whyACommonFormat)
-  - Encrypted image must be the same size as the initial image. [:Why?](#whySameSize)
+  - The encrypted image must be the same size as the initial image. [:Why?](#whySameSize)
   - When the encrypted image is scaled down and decrypted the result should be a scaled version of the initial image, i.e. Decrypt(Scale(Encrypt(Img))) = Decrypt(Enc(Scale(Img))) = Scale(Img), The above property should hold for most common scaling algorithms.
   - Encryption must be "backed" by a standard encryption algorithm to ensure security.
   - Encryption may be lossy as long as the image is mostly preserved.
@@ -48,10 +48,10 @@ This is so that the user need not waste extra bandwidth for downloading large im
 Now that we have specified the constraints the most obvious solution is to work with the image in the frequency domain with a [:Direct Cosine Transform](#DCT).	This is because a scaling operation is [:analogous to a crop](#DCTAndScaling) of the top left part of the DCT of the corresponding size.
 
 ## :x DCT
-DCT is an operation that converts an image to a same shaped matrix of frequencies with the lower frequencies being at the top left and the higher frequencies at the bottom right. The coefficients are real valued unlike a fourier transform and they represent a sum of cosines. It is an invertable operation and theoretically no data is lost however floating point errors will creep in.
+DCT is an operation that converts an image to a same shaped matrix of frequencies with the lower frequencies being at the top left and the higher frequencies at the bottom right. The coefficients are real valued unlike a fourier transform and they represent a sum of cosines. It is an invertible operation and theoretically no data is lost however floating point errors will creep in.
 
 ## :x DCT and Scaling
-Scaling process deletes high frequency data and leaves the low frequency data. When an image is scaled usually the high quality detail is smoothed away leading to the deletion of the high frequency data but the low frequency data which tells more about the image overall is preserved. In other words scaling is basically a resampling of the signal which would lead to the high frequency region to get cutoff.
+The scaling process deletes high frequency data and leaves the low frequency data. When an image is scaled usually the high quality detail is smoothed away leading to the deletion of the high frequency data but the low frequency data which tells more about the image overall is preserved. In other words scaling is basically a resampling of the signal which would lead to the high frequency region to get cutoff.
 
 # The Naïve Encryption
 The naïve way to encrypt would be to use AES. This is by taking 2 coefficients at a time and encrypting them. [:Why?](#why2Coefficients) the resulting coefficients can be converted to an image through an inverse DCT to get the final encrypted image
@@ -64,11 +64,13 @@ Each coefficent will be represented as a double precision float(double/float64),
 The reason that the image has such a high amplitude is that the maximum value that could be stored in the image is very high and as a result a random number picked will have a large amplitude in general. The trick is to realise that data can be stored in the float even if the magnitude of the float is constrained a lot. This can be done by [:exploiting the bits of the floats](#BitManipulation). This will be lossy as it is not possible to encode all the data but the important stuff can be encrypted and stored without compromising the raw amplitude of the double.
 
 ## :x Bit Manipulation
-The IEEE 754 states that from right to left the bits represent 1 sign bit, 11 for the exponent biased by 1023 and 52 bits of the mantissa. The mantissa doesn't encode a lot of information regarding the image especially the ones with the lower significance so we will only preserve the first 4. Including the sign and exponent this gives 16 bits which can be encrypted. The encrypted 16 bits are then stored in the MSBs of the mantissa and the rest is filled with a 1 followed by zeroes to prevent floating point errors from corrupting the data. The sign bit is set to 1 and the exponent is set to -1 (1022). The exponent is set to -1 as it ensures the magnitude of the number will be from (64 to 127) or (-127 to -64) which fits inside our bound.
-
+The IEEE 754 states that from right to left the bits represent 1 sign bit, 11 for the exponent biased by 1023 and 52 bits of the mantissa. The mantissa doesn't encode a lot of information regarding the image, especially the ones with the lower significance so we will only preserve the first 4. Including the sign and exponent this gives 16 bits which can be encrypted with 8 other values. The encrypted 16 bits are then stored in the MSBs of the mantissa and the rest is filled with a 1 followed by zeroes to prevent floating point errors from corrupting the data. The sign bit is set to 1 and the exponent is set to -1 (1022). The exponent is set to -1 as it ensures the magnitude of the number will be from (64 to 127) or (-127 to -64) which fits inside our bound.
 
 # The Second Hurdle
-When this new method is used the resulting image has pixels with values from 0 to 255 but they are all still floating points but we require integers. if we round the floats to the nearest integer the error is too high and it changes the DCT coefficents by enough to change the data stored which changes the critical data stored and renders the image in a corrupted state
+When this new method is used the resulting image has pixels with values from 0 to 255 but they are all still floating points but we require integers. If we round the floats to the nearest integer the error is too high and it changes the DCT coefficients by enough to change the data stored which changes the critical data stored and renders the image in a corrupted state. [:A feeble attempt](#AFeebleAttempt). can be tried to decrease the amount of data stored to make it more resilient to corruption but it is simply not enough
+
+## :x A Feeble Attempt
+Instead of [:manipulating the bits of the floats](#BitManipulation) using float64, using a (half/float16) allows for 1 sign bit, 5 for the exponent biased by 15 and 10 bits of the mantissa. Using 2 bits of the mantissa gives 8 bits which can be encrypted with 16 other values and stored in the first 8 bits of the mantissa
 
 # A Sad Ending
 Unfortunately I could not find a solution to this issue and am stuck, if you find a solution to this please contact me at 
