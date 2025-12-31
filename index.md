@@ -72,8 +72,6 @@ When this new method is used the resulting image has pixels with values from 0 t
 ## :x A Feeble Attempt
 Instead of [:manipulating the bits of the floats](#BitManipulation) using float64, using a (half/float16) allows for 1 sign bit, 5 for the exponent biased by 15 and 10 bits of the mantissa. Using 2 bits of the mantissa gives 8 bits which can be encrypted with 16 other values and stored in the first 8 bits of the mantissa
 
-
-
 # A Sad Ending
 Unfortunately I could not find a solution to this issue and am stuck, if you find a solution to this please contact me at 
 satindra.r@gmail.com or on discord at Satindra
