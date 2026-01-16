@@ -73,12 +73,18 @@ When this new method is used the resulting image has pixels with values from 0 t
 Instead of [:manipulating the bits of the floats](#BitManipulation) using float64, using a (half/float16) allows for 1 sign bit, 5 for the exponent biased by 15 and 10 bits of the mantissa. Using 2 bits of the mantissa gives 8 bits which can be encrypted with 16 other values and stored in the first 8 bits of the mantissa
 
 # Breakthrough
-The core issue in the previous attempts was the [:mode of the AES encryption](#AESModes) making it a block cipher. This caused small errors to propagate throughout the data corrupting MSBs. Using a stream cipher ensures that a corruption in any bits only affects those bits and the MSBs which store the crucial information is protected
+The core issue in the previous attempts was the [:mode of the AES encryption](#AESModes) making it a block cipher. This caused small errors to propagate throughout the data corrupting MSBs. Using a stream cipher ensures that a corruption in any bits only affects those bits and the MSBs which store the crucial information is protected.
 
 ## :x AES Modes
 AES is a block cipher that takes in 16 bytes of data and encrypts it, however there are multiple ways of using the cipher to encrypt large quantities of data. The most straightforward way is to split the data into 16 byte chunks and encrypt them individually which is known as Electronic Code Book(ECB). This method has weaknesses as it can reveal some patterns about the data. To fix this Cipher Block Chaining(CBC) mode was created where the first block's plain text is XORed with an Initialisation Vector and each succeeding block's plain text is XORed with the previous block's cipher text.
 
 Both of these modes behave like a block cipher but there is a mode called Counter(CTR) which allows the cipher to behave like a stream cipher. This is done by using a Nonce(Number used once) and a counter. The counter and Nonce are concatenated and encrypted with the key. The cipher output is XORed with the plain text to make the cipher text. For the next block the counter is incremented and the process is continued. This allows for changes in the plain text to not spread across the cipher text.
+
+# Small Tweaks
+Since the 2D DCT has to be encrypted with a stream cipher it has to be flattened to one dimention and the indexing should not depend on the size of the image. The solution was to take "⅃" shaped nesting sections and encrypting them sequentially so every pixel gets the same index no matter the size of the image. The [:manipulation of the float bits](#BitManipulation2) also has to be modified to ensure most of the information comes through.
+
+## :x Bit Manipulation2
+Back again using float32 the sign bit is XORed then the exponent is kept as is to keep the magnitude of the float from increasing too much. The mantissa is shifted to the right and encrypted from the first set bit to ensure that the total float is lesser than the initial value so that the encrypted image is has values between 0-255 and the reverse is done while decrypting.
 
 # Contact me 
 satindra.r@gmail.com or on discord at saturn.255
