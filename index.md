@@ -16,15 +16,15 @@ This Blog is made using [Nutshell](https://ncase.me/nutshell) click on the [:Spe
 Links with a ':' at the start
 
 # Introduction
-Images like any other data format can very easily be encrypted using standard algorithms like RSA or AES but those result in a meaningless blob that can't be used anywhere. Sometimes it's worth keeping some properties to allow for file uploads to share with others in places where images are only allowed.
+Images, like any other data format can very easily be encrypted using standard algorithms like RSA or AES but those result in a meaningless blob that can't be used anywhere. Sometimes it's worth keeping some properties to allow existing systems that process images to play well with the data.
 
 # Basic Encryption
-This step is fairly easy to implement, we can easily take a block of a few pixels and encrypt them and interpret the resulting data also as pixels. This allows us to upload the encrypted image on social media or chat apps that restrict file uploads to images. However some apps do additional processing like scaling the image and the new algorithm for encryption doesn't work anymore. When the image is scaled the algorithm usually involves some interpolation so the resulting pixels are different from the starting pixels and the decryption breaks
+This step is fairly easy to implement, we can take a block of a few pixels, encrypt them, and interpret the resulting data also as pixels. This allows us to upload the encrypted image on social media or chat apps that restrict file uploads to images. However some apps do additional processing like scaling the image and the new algorithm for encryption doesn't work anymore. When the image is scaled the algorithm usually involves some interpolation so the resulting pixels are different from the starting pixels and the decryption breaks
 
 The knee-jerk reaction to trying to work with encrypted data is [:Homomorphic Encryption](#HomomorphicEncryption). However there are a [:few specific issues](#IssuesWithHomomorphicEncryption) that make this not optimal.
 
 ## :x Homomorphic Encryption
-Homomorphic Encryption is a scheme where operations can be performed on the encrypted data which corresponds to an operation on the initial data. This can be written as encrypt(f(a)) = g(encrypt(a)) or in the binary operation case encrypt(f(a,b)) = g(encrypt(a),encrypt(b))
+Homomorphic Encryption is a scheme where operations can be performed on the encrypted data which corresponds to an operation on the initial data. This can be written as `encrypt(f(a)) = g(encrypt(a))` or in the binary operation case `encrypt(f(a,b)) = g(encrypt(a),encrypt(b))`.
 
 ## :x Issues with Homomorphic Encryption
 In Homomorphic Encryption there is no control over the algorithm used on the encrypted image, this is both in terms of the actual logic of the algorithm and also that it won't involve the required operators that map from the unencrypted domain to the encrypted domain. Secondly the calculations are usually performed in floating point and converted to integers at the end which doesn't play well with most Homomorphic Encryption schemes
@@ -34,7 +34,7 @@ Before we move on with the potentials solutions we have to define the problem to
   - Encryption must convert images to images.
   - Images must be in a commonly used format preferably the same format as the input image. [:Why?](#whyACommonFormat)
   - The encrypted image must be the same size as the initial image. [:Why?](#whySameSize)
-  - When the encrypted image is scaled down and decrypted the result should be a scaled version of the initial image, i.e. Decrypt(Scale(Encrypt(Img))) = Decrypt(Enc(Scale(Img))) = Scale(Img), The above property should hold for most common scaling algorithms.
+  - When the encrypted image is scaled down and decrypted the result should be a scaled version of the initial image, i.e. `Decrypt(Scale(Encrypt(Img))) = Decrypt(Enc(Scale(Img))) = Scale(Img)`, The above property should hold for most common scaling algorithms.
   - Encryption must be "backed" by a standard encryption algorithm to ensure security.
   - Encryption may be lossy as long as the image is mostly preserved.
 
@@ -55,7 +55,7 @@ The scaling process deletes high frequency data and leaves the low frequency dat
 
 # The Naïve Encryption
 The naïve way to encrypt would be to use AES. This is by taking 2 coefficients at a time and encrypting them. [:Why?](#why2Coefficients) the resulting coefficient can be converted to an image through an inverse DCT to get the final encrypted image
-This method has an issue the resulting image will have amplitudes which aren't bounded, however we need the image amplitudes to be between 0 and 255
+This method has an issue the resulting image will have amplitudes which aren't bounded(we need the image amplitudes to be between 0 and 255).
 
 ## :x Why 2 Coefficients
 Each coefficient will be represented as a double precision float(double/float64), since AES takes 128 bits as an input two of them together can form the input and the encrypted result of 128 bits can be split back into two floats, while decrypting if any pair is split due to the cropping it has to be neglected but the rest of the image can be decrypted resulting in a slightly smaller image.
@@ -70,7 +70,7 @@ The IEEE 754 states that from right to left the bits represent 1 sign bit, 11 fo
 When this new method is used the resulting image has pixels with values from 0 to 255 but they are all still floating points but we require integers. If we round the floats to the nearest integer the error is too high and it changes the DCT coefficients by enough to change the data stored which changes the critical data stored and renders the image in a corrupted state. [:A feeble attempt using smaller datatypes](#AFeebleAttempt). can be tried to decrease the amount of data stored to make it more resilient to corruption but it is simply not enough.
 
 ## :x A Feeble Attempt
-Instead of [:manipulating the bits of the floats](#BitManipulation) using float64, using a (half/float16) allows for 1 sign bit, 5 for the exponent biased by 15 and 10 bits of the mantissa. Using 2 bits of the mantissa gives 8 bits which can be encrypted with 16 other values and stored in the first 8 bits of the mantissa
+Instead of [:manipulating the bits of the floats](#BitManipulation) using float64, using a (half/float16) allows for 1 sign bit, 5 for the exponent biased by 15 and 10 bits of the mantissa. Using 2 bits of the mantissa gives 8 bits which can be encrypted with 16 other values and stored in the first 8 bits of the mantissa.
 
 # Breakthrough
 The core issue in the previous attempts was the [:mode of the AES encryption](#AESModes) making it a block cipher. This caused small errors to propagate throughout the data corrupting MSBs. Using a stream cipher ensures that a corruption in any bits only affects those bits and the MSBs which store the crucial information is protected.
