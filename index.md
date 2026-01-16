@@ -54,11 +54,11 @@ DCT is an operation that converts an image to a same shaped matrix of frequencie
 The scaling process deletes high frequency data and leaves the low frequency data. When an image is scaled usually the high quality detail is smoothed away leading to the deletion of the high frequency data but the low frequency data which tells more about the image overall is preserved. In other words scaling is basically a resampling of the signal which would lead to the high frequency region to get cutoff.
 
 # The Naïve Encryption
-The naïve way to encrypt would be to use AES. This is by taking 2 coefficients at a time and encrypting them. [:Why?](#why2Coefficients) the resulting coefficients can be converted to an image through an inverse DCT to get the final encrypted image
+The naïve way to encrypt would be to use AES. This is by taking 2 coefficients at a time and encrypting them. [:Why?](#why2Coefficients) the resulting coefficient can be converted to an image through an inverse DCT to get the final encrypted image
 This method has an issue the resulting image will have amplitudes which aren't bounded, however we need the image amplitudes to be between 0 and 255
 
 ## :x Why 2 Coefficients
-Each coefficent will be represented as a double precision float(double/float64), since AES takes 128 bits as an input two of them together can form the input and the encrypted result of 128 bits can be split back into two floats, while decrypting if any pair is split due to the cropping it has to be neglected but the rest of the image can be decrypted resulting in a slightly smaller image.
+Each coefficient will be represented as a double precision float(double/float64), since AES takes 128 bits as an input two of them together can form the input and the encrypted result of 128 bits can be split back into two floats, while decrypting if any pair is split due to the cropping it has to be neglected but the rest of the image can be decrypted resulting in a slightly smaller image.
 
 # Clever Workaround
 The reason that the image has such a high amplitude is that the maximum value that could be stored in the image is very high and as a result a random number picked will have a large amplitude in general. The trick is to realise that data can be stored in the float even if the magnitude of the float is constrained a lot. This can be done by [:exploiting the bits of the floats](#BitManipulation). This will be lossy as it is not possible to encode all the data but the important stuff can be encrypted and stored without compromising the raw amplitude of the double.
@@ -72,7 +72,14 @@ When this new method is used the resulting image has pixels with values from 0 t
 ## :x A Feeble Attempt
 Instead of [:manipulating the bits of the floats](#BitManipulation) using float64, using a (half/float16) allows for 1 sign bit, 5 for the exponent biased by 15 and 10 bits of the mantissa. Using 2 bits of the mantissa gives 8 bits which can be encrypted with 16 other values and stored in the first 8 bits of the mantissa
 
-# A Sad Ending
-Unfortunately I could not find a solution to this issue and am stuck, if you find a solution to this please contact me at 
-satindra.r@gmail.com or on discord at Satindra
+# Breakthrough
+The core issue in the previous attempts was the [:mode of the AES encryption](#AESModes) making it a block cipher. This caused small errors to propagate throughout the data corrupting MSBs. Using a stream cipher ensures that a corruption in any bits only affects those bits and the MSBs which store the crucial information is protected
+
+## :x AES Modes
+AES is a block cipher that takes in 16 bytes of data and encrypts it, however there are multiple ways of using the cipher to encrypt large quantities of data. The most straightforward way is to split the data into 16 byte chunks and encrypt them individually which is known as Electronic Code Book(ECB). This method has weaknesses as it can reveal some patterns about the data. To fix this Cipher Block Chaining(CBC) mode was created where the first block's plain text is XORed with an Initialisation Vector and each succeeding block's plain text is XORed with the previous block's cipher text.
+
+Both of these modes behave like a block cipher but there is a mode called Counter(CTR) which allows the cipher to behave like a stream cipher. This is done by using a Nonce(Number used once) and a counter. The counter and Nonce are concatenated and encrypted with the key. The cipher output is XORed with the plain text to make the cipher text. For the next block the counter is incremented and the process is continued. This allows for changes in the plain text to not spread across the cipher text.
+
+# Contact me 
+satindra.r@gmail.com or on discord at saturn.255
 
