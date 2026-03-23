@@ -4,7 +4,7 @@ title: Desmos Music and Vernier Stopwatches
 ---
 For the first time any audio can be played on desmos.
 <iframe src="https://www.desmos.com/calculator/tmqsxilkye" width="100%" style="min-height:75vh"></iframe>
-<br/>
+</br>
 <div style="text-align: center;">
   <img src="{{ '/assets/callipers.png' | relative_url }}" alt="Vernier callipers measuring a stopwatch" width="50%">
 </div>
@@ -21,13 +21,11 @@ Phase is normally not detectable by our ears but relative phase is. For waves of
 
 # Cracking Phase Calibration
 
-
-
-## WebAudio API
-The JS WebAudio API has some quirks in the way it operates. An inspection of the source code reveals that when the frequency of a tone is changed the phase isn't altered presumably to avoid popping or crackling when the frequency is altered. This behaviour can be exploited by "calibrating" the phase by playing some audio which sets the phase to the intended value and then playing the tone at the desired frequency and amplitude.
+## How does Phase work?
+For a sine wave it's phase keeps changing and the amount it changes by is based on it's frequency. So just waiting for some amount of time will change the wave's phase. The JS WebAudio API has some quirks in the way it operates. An inspection of the source code reveals that when the frequency of a tone is changed the phase isn't altered presumably to avoid popping or crackling when the frequency is altered. This behaviour can be exploited by "calibrating" the phase by playing some audio which sets the phase to the intended value and then playing the tone at the desired frequency and amplitude. Because the phase will not change when the frequency is altered.
 
 ## Short Delay Approach
 Since phase changes over time we can just wait for a short period of time however this time delay is too small and the builtin desmos ticker can only fire every 20ms or so.
 
 ## Relative Phase Approach
-Since we can only work in large intervals of time we can borrow a page from the vernier callipers. By using two scales of different but similar intervals we can measure values smaller than either of the scales. Similarly by using two `tone()` functions at different frequencies we can move the phase by a small amount by waiting a longer time. By changing the frequencies we can get a different phase difference 
+Since we can only work in large intervals of time we can borrow a page from the vernier callipers. By using two scales of different but similar spacings we can measure values smaller than either of the scales. This works because by offsetting the scales the markings will coincide at a different location. Similarly the frequency of a `tone()` function can be thought of as the spacing between the markings of the scales. So by playing two `tone()` functions at slightly different frequencies the phases will move at different speeds. This difference in speed will cause the two phases to drift. By changing the frequency difference we can get a different phase difference for the same waiting time. Then the frequencies can be changed to what they need to be from the fourier transform and the WebAudio API will preserve the phase.
